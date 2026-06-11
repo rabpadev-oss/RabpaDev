@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">RabpaDev</string>
+    <string name="menu_home">Home</string>
+    <string name="menu_email">Email</string>
+    <string name="menu_a2f">A2F</string>
+    <string name="menu_refresh">Refresh</string>
+    <string name="menu_clear_data">Clear Data</string>
+    <string name="exit_title">Keluar Aplikasi</string>
+    <string name="exit_message">Apakah Anda yakin ingin keluar?</string>
+    <string name="clear_data_title">Hapus Data</string>
+    <string name="clear_data_message">Hapus semua data Instagram yang tersimpan?</string>
+    <string name="clear_data_success">Data berhasil dihapus</string>
+    <string name="yes">Ya</string>
+    <string name="no">Tidak</string>
+    <string name="permission_denied">Izin akses penyimpanan ditolak</string>
+</resources>
