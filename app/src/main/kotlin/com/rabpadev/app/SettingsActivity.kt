@@ -3,6 +3,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -11,7 +12,23 @@ import android.webkit.CookieManager
 import android.webkit.WebStorage
 class SettingsActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySettingsBinding
-    private val photoPicker = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+    // Multi-photo picker (Android 13+)
+    private val multiPhotoPicker = registerForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris: List<Uri> ->
+        var added = 0
+        uris.forEach { uri ->
+            try {
+                contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            } catch (e: Exception) {}
+            AppSettings.addPhoto(this, uri.toString())
+            added++
+        }
+        if (added > 0) {
+            updatePhotoCount()
+            Toast.makeText(this, "$added foto ditambahkan!", Toast.LENGTH_SHORT).show()
+        }
+    }
+    // Fallback single picker
+    private val singlePhotoPicker = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let {
             try { contentResolver.takePersistableUriPermission(it, Intent.FLAG_GRANT_READ_URI_PERMISSION) } catch (e: Exception) {}
             AppSettings.addPhoto(this, it.toString())
@@ -36,7 +53,7 @@ class SettingsActivity : AppCompatActivity() {
         binding.etDefaultPassword.setText(AppSettings.getDefaultPassword(this))
         binding.switchAutoProfile.isChecked = AppSettings.isAutoProfileEnabled(this)
         updatePhotoCount()
-        binding.btnAddPhoto.setOnClickListener { photoPicker.launch("image/*") }
+        binding.btnAddPhoto.setOnClickListener { multiPhotoPicker.launch("image/*") }
         binding.btnViewPhotos.setOnClickListener { showPhotoListDialog() }
         binding.btnOpenAuthenticator.setOnClickListener { startActivity(Intent(this, AuthenticatorActivity::class.java)) }
         binding.btnClearCookies.setOnClickListener {
