@@ -11,14 +11,12 @@ import android.webkit.CookieManager
 import android.webkit.WebStorage
 class SettingsActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySettingsBinding
-    private var selectedPhotoUri: String = ""
     private val photoPicker = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let {
             try { contentResolver.takePersistableUriPermission(it, Intent.FLAG_GRANT_READ_URI_PERMISSION) } catch (e: Exception) {}
-            selectedPhotoUri = it.toString()
-            binding.ivProfilePreview.setImageURI(it)
-            AppSettings.setProfilePhotoUri(this, selectedPhotoUri)
-            Toast.makeText(this, getString(R.string.photo_selected), Toast.LENGTH_SHORT).show()
+            AppSettings.addPhoto(this, it.toString())
+            updatePhotoCount()
+            Toast.makeText(this, getString(R.string.photo_added), Toast.LENGTH_SHORT).show()
         }
     }
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,12 +26,18 @@ class SettingsActivity : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         binding.toolbar.setNavigationOnClickListener { finish() }
+        // Load settings
+        binding.switchAutoFill.isChecked = AppSettings.isAutoFillEnabled(this)
+        binding.etFillName.setText(AppSettings.getFillName(this))
+        binding.etFillUsername.setText(AppSettings.getFillUsername(this))
+        binding.etAgeMin.setText(AppSettings.getAgeMin(this).toString())
+        binding.etAgeMax.setText(AppSettings.getAgeMax(this).toString())
         binding.switchPasswordAutofill.isChecked = AppSettings.isPasswordAutofillEnabled(this)
         binding.etDefaultPassword.setText(AppSettings.getDefaultPassword(this))
         binding.switchAutoProfile.isChecked = AppSettings.isAutoProfileEnabled(this)
-        selectedPhotoUri = AppSettings.getProfilePhotoUri(this)
-        if (selectedPhotoUri.isNotEmpty()) { try { binding.ivProfilePreview.setImageURI(Uri.parse(selectedPhotoUri)) } catch (e: Exception) { selectedPhotoUri = "" } }
-        binding.btnChoosePhoto.setOnClickListener { photoPicker.launch("image/*") }
+        updatePhotoCount()
+        binding.btnAddPhoto.setOnClickListener { photoPicker.launch("image/*") }
+        binding.btnViewPhotos.setOnClickListener { showPhotoListDialog() }
         binding.btnOpenAuthenticator.setOnClickListener { startActivity(Intent(this, AuthenticatorActivity::class.java)) }
         binding.btnClearCookies.setOnClickListener {
             MaterialAlertDialogBuilder(this).setTitle("Clear Cookies").setMessage("Hapus semua cookies?")
@@ -50,12 +54,35 @@ class SettingsActivity : AppCompatActivity() {
                 .setPositiveButton(getString(R.string.yes)) { _, _ -> CookieManager.getInstance().removeSessionCookies(null); CookieManager.getInstance().flush(); Toast.makeText(this, getString(R.string.session_cleared), Toast.LENGTH_SHORT).show() }
                 .setNegativeButton(getString(R.string.cancel), null).show()
         }
-        binding.btnSaveSettings.setOnClickListener {
-            AppSettings.setPasswordAutofillEnabled(this, binding.switchPasswordAutofill.isChecked)
-            AppSettings.setDefaultPassword(this, binding.etDefaultPassword.text.toString())
-            AppSettings.setAutoProfileEnabled(this, binding.switchAutoProfile.isChecked)
-            if (selectedPhotoUri.isNotEmpty()) AppSettings.setProfilePhotoUri(this, selectedPhotoUri)
-            Toast.makeText(this, getString(R.string.settings_saved), Toast.LENGTH_SHORT).show()
-        }
+        binding.btnSaveSettings.setOnClickListener { saveSettings() }
+    }
+    private fun updatePhotoCount() {
+        val count = AppSettings.getPhotoList(this).size
+        binding.tvPhotoCount.text = "$count foto tersimpan"
+    }
+    private fun showPhotoListDialog() {
+        val photos = AppSettings.getPhotoList(this)
+        if (photos.isEmpty()) { Toast.makeText(this, getString(R.string.photo_list_empty), Toast.LENGTH_SHORT).show(); return }
+        val labels = photos.mapIndexed { i, uri -> "Foto ${i+1}: ...${uri.takeLast(30)}" }.toTypedArray()
+        MaterialAlertDialogBuilder(this).setTitle("Daftar Foto Tersimpan (${photos.size})")
+            .setItems(labels) { _, idx ->
+                MaterialAlertDialogBuilder(this).setTitle("Hapus foto ini?")
+                    .setPositiveButton(getString(R.string.yes)) { _, _ ->
+                        AppSettings.removePhoto(this, photos[idx]); updatePhotoCount()
+                        Toast.makeText(this, getString(R.string.photo_deleted), Toast.LENGTH_SHORT).show()
+                    }.setNegativeButton(getString(R.string.cancel), null).show()
+            }
+            .setNegativeButton("Tutup", null).show()
+    }
+    private fun saveSettings() {
+        AppSettings.setAutoFillEnabled(this, binding.switchAutoFill.isChecked)
+        AppSettings.setFillName(this, binding.etFillName.text.toString().trim())
+        AppSettings.setFillUsername(this, binding.etFillUsername.text.toString().trim())
+        AppSettings.setAgeMin(this, binding.etAgeMin.text.toString().toIntOrNull() ?: 20)
+        AppSettings.setAgeMax(this, binding.etAgeMax.text.toString().toIntOrNull() ?: 49)
+        AppSettings.setPasswordAutofillEnabled(this, binding.switchPasswordAutofill.isChecked)
+        AppSettings.setDefaultPassword(this, binding.etDefaultPassword.text.toString())
+        AppSettings.setAutoProfileEnabled(this, binding.switchAutoProfile.isChecked)
+        Toast.makeText(this, getString(R.string.settings_saved), Toast.LENGTH_SHORT).show()
     }
 }

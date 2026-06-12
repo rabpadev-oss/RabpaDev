@@ -2,6 +2,8 @@ package com.rabpadev.app
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -78,19 +80,29 @@ class MainActivity : AppCompatActivity() {
                     else -> false
                 }
             }
-            override fun onPageStarted(v: WebView?, url: String?, f: android.graphics.Bitmap?) { super.onPageStarted(v, url, f); binding.progressBar.visibility = View.VISIBLE; binding.progressBar.progress = 0 }
+            override fun onPageStarted(v: WebView?, url: String?, f: android.graphics.Bitmap?) { super.onPageStarted(v,url,f); binding.progressBar.visibility = View.VISIBLE; binding.progressBar.progress = 0 }
             override fun onPageFinished(v: WebView?, url: String?) {
                 super.onPageFinished(v, url); binding.progressBar.visibility = View.GONE; CookieManager.getInstance().flush()
+                // Auto password fill
                 if (AppSettings.isPasswordAutofillEnabled(this@MainActivity)) { val p = AppSettings.getDefaultPassword(this@MainActivity); if (p.isNotEmpty()) injectPassword(p) }
+                // Auto fill random data
+                if (AppSettings.isAutoFillEnabled(this@MainActivity)) { injectAutoFillAll() }
             }
         }
         wv.webChromeClient = object : WebChromeClient() {
             override fun onProgressChanged(v: WebView?, p: Int) { binding.progressBar.progress = p; if (p == 100) binding.progressBar.visibility = View.GONE }
-            override fun onShowFileChooser(webView: WebView?, cb: ValueCallback<Array<Uri>>?, params: FileChooserParams?): Boolean {
+            override fun onShowFileChooser(wv2: WebView?, cb: ValueCallback<Array<Uri>>?, params: FileChooserParams?): Boolean {
                 fileUploadCallback?.onReceiveValue(null); fileUploadCallback = cb
+                // Random profile picture
                 if (AppSettings.isAutoProfileEnabled(this@MainActivity)) {
-                    val uri = AppSettings.getProfilePhotoUri(this@MainActivity)
-                    if (uri.isNotEmpty()) { try { fileUploadCallback?.onReceiveValue(arrayOf(Uri.parse(uri))); fileUploadCallback = null; return true } catch (e: Exception) {} }
+                    val uri = AppSettings.getRandomPhoto(this@MainActivity)
+                    if (uri != null) {
+                        try {
+                            fileUploadCallback?.onReceiveValue(arrayOf(Uri.parse(uri))); fileUploadCallback = null
+                            Toast.makeText(this@MainActivity, getString(R.string.random_photo_used), Toast.LENGTH_SHORT).show()
+                            return true
+                        } catch (e: Exception) {}
+                    }
                 }
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU && ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) { permLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE); return true }
                 val intent = params?.createIntent() ?: Intent(Intent.ACTION_GET_CONTENT).apply { type = "*/*"; addCategory(Intent.CATEGORY_OPENABLE); putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true) }
@@ -107,9 +119,42 @@ class MainActivity : AppCompatActivity() {
             override fun handleOnBackPressed() { if (binding.webView.canGoBack()) binding.webView.goBack() else showExitDialog() }
         })
     }
-    private fun escape(s: String) = s.replace("\\", "\\\\").replace("'", "\\'")
+    private fun e(s: String) = s.replace("\\","\\\\").replace("'","\\'")
     private fun injectPassword(pwd: String) {
-        binding.webView.evaluateJavascript("""(function(){var els=document.querySelectorAll('input[type="password"]');if(!els.length)return;var s=Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype,'value').set;els.forEach(function(el){s.call(el,'${escape(pwd)}');el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));});})();""", null)
+        binding.webView.evaluateJavascript("""(function(){var els=document.querySelectorAll('input[type="password"]');if(!els.length)return;var s=Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype,'value').set;els.forEach(function(el){s.call(el,'${e(pwd)}');el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));});})();""", null)
+    }
+    private fun injectAutoFillAll() {
+        val savedName = AppSettings.getFillName(this)
+        val savedUser = AppSettings.getFillUsername(this)
+        val name = if (savedName.isNotEmpty()) savedName else RandomData.randomName()
+        val username = if (savedUser.isNotEmpty()) savedUser else RandomData.randomUsername()
+        val bday = RandomData.randomBirthday(AppSettings.getAgeMin(this), AppSettings.getAgeMax(this))
+        val year = RandomData.birthdayToYear(bday)
+        val pwd = AppSettings.getDefaultPassword(this)
+        val js = """
+(function(){
+  function f(sels,v){if(!v)return;try{var s=Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype,'value').set;sels.forEach(function(sel){document.querySelectorAll(sel).forEach(function(el){s.call(el,v);el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));});});}catch(e){}}
+  f(['input[name="name"]','input[name="fullName"]','input[placeholder*="ama"]','input[autocomplete="name"]','input[placeholder*="Name"]'],'${e(name)}');
+  f(['input[name="username"]','input[placeholder*="sername"]','input[autocomplete="username"]','input[placeholder*="Username"]'],'${e(username)}');
+  f(['input[type="password"]','input[name="password"]','input[autocomplete="current-password"]','input[autocomplete="new-password"]'],'${e(pwd)}');
+  f(['input[name="birthday"]','input[placeholder*="lahir"]','input[placeholder*="birth"]','input[name="bday"]'],'$bday');
+  f(['input[name="year"]','select[name="year"] option','input[placeholder*="ahun"]','input[placeholder*="Year"]'],'$year');
+  // Select dropdowns
+  document.querySelectorAll('select').forEach(function(sel){
+    var v='';
+    if(sel.name&&(sel.name.includes('year')||sel.name.includes('Year')))v='$year';
+    if(v){Array.from(sel.options).forEach(function(o){if(o.value==v||o.text==v){sel.value=v;sel.dispatchEvent(new Event('change',{bubbles:true}));}});}
+  });
+})();""".trimIndent()
+        binding.webView.evaluateJavascript(js, null)
+    }
+    private fun copyCookie() {
+        val url = binding.webView.url ?: URL_HOME
+        val cookies = CookieManager.getInstance().getCookie(url)
+        if (cookies.isNullOrEmpty()) { Toast.makeText(this, "Tidak ada cookie untuk halaman ini", Toast.LENGTH_SHORT).show(); return }
+        val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        cm.setPrimaryClip(ClipData.newPlainText("Cookie", cookies))
+        Toast.makeText(this, getString(R.string.cookie_copied), Toast.LENGTH_SHORT).show()
     }
     private fun showAutoFillDialog() {
         val p = getSharedPreferences(PREFS_AF, Context.MODE_PRIVATE)
@@ -120,13 +165,13 @@ class MainActivity : AppCompatActivity() {
         etName.setText(p.getString("af_name","")); etUser.setText(p.getString("af_username",""))
         etEmail.setText(p.getString("af_email","")); etPhone.setText(p.getString("af_phone",""))
         etBday.setText(p.getString("af_birthday",""))
-        val sp = p.getString("af_password",""); etPwd.setText(if (!sp.isNullOrEmpty()) sp else AppSettings.getDefaultPassword(this))
+        val sp = p.getString("af_password",""); etPwd.setText(if(!sp.isNullOrEmpty()) sp else AppSettings.getDefaultPassword(this))
         MaterialAlertDialogBuilder(this).setTitle(getString(R.string.autofill_title)).setView(v)
             .setPositiveButton(getString(R.string.autofill_btn_fill)) { _, _ ->
                 val name = etName.text.toString().trim(); val email = etEmail.text.toString().trim()
                 if (name.isEmpty() && email.isEmpty()) { Toast.makeText(this, getString(R.string.autofill_empty), Toast.LENGTH_SHORT).show(); return@setPositiveButton }
                 p.edit().putString("af_name",name).putString("af_username",etUser.text.toString().trim()).putString("af_email",email).putString("af_phone",etPhone.text.toString().trim()).putString("af_birthday",etBday.text.toString().trim()).putString("af_password",etPwd.text.toString().trim()).apply()
-                injectAll(name, etUser.text.toString().trim(), email, etPhone.text.toString().trim(), etBday.text.toString().trim(), etPwd.text.toString().trim())
+                injectManualFill(name, etUser.text.toString().trim(), email, etPhone.text.toString().trim(), etBday.text.toString().trim(), etPwd.text.toString().trim())
                 Toast.makeText(this, getString(R.string.autofill_filled), Toast.LENGTH_SHORT).show()
             }
             .setNeutralButton(getString(R.string.autofill_btn_save)) { _, _ ->
@@ -134,22 +179,22 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, getString(R.string.autofill_saved), Toast.LENGTH_SHORT).show()
             }.setNegativeButton(getString(R.string.cancel), null).show()
     }
-    private fun injectAll(name: String, user: String, email: String, phone: String, bday: String, pwd: String) {
+    private fun injectManualFill(name: String, user: String, email: String, phone: String, bday: String, pwd: String) {
         binding.webView.evaluateJavascript("""
 (function(){function f(sels,v){if(!v)return;var s=Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype,'value').set;sels.forEach(function(sel){document.querySelectorAll(sel).forEach(function(el){s.call(el,v);el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));});});}
-f(['input[name="name"]','input[name="fullName"]','input[placeholder*="ame"]','input[autocomplete="name"]'],'${escape(name)}');
-f(['input[name="username"]','input[placeholder*="sername"]','input[autocomplete="username"]'],'${escape(user)}');
-f(['input[type="email"]','input[name="email"]','input[name="emailOrPhone"]'],'${escape(email)}');
-f(['input[type="tel"]','input[name="phone"]','input[placeholder*="hone"]'],'${escape(phone)}');
-f(['input[name="birthday"]','input[placeholder*="birth"]','input[placeholder*="lahir"]'],'${escape(bday)}');
-f(['input[type="password"]','input[name="password"]','input[autocomplete="current-password"]'],'${escape(pwd)}');})();""", null)
+f(['input[name="name"]','input[name="fullName"]','input[placeholder*="ama"]','input[autocomplete="name"]'],'${e(name)}');
+f(['input[name="username"]','input[placeholder*="sername"]','input[autocomplete="username"]'],'${e(user)}');
+f(['input[type="email"]','input[name="email"]','input[name="emailOrPhone"]','input[placeholder*="mail"]'],'${e(email)}');
+f(['input[type="tel"]','input[name="phone"]','input[placeholder*="hone"]'],'${e(phone)}');
+f(['input[name="birthday"]','input[placeholder*="lahir"]','input[placeholder*="birth"]'],'${e(bday)}');
+f(['input[type="password"]','input[name="password"]'],'${e(pwd)}');})();""", null)
     }
     private fun showClearDataDialog() {
         MaterialAlertDialogBuilder(this).setTitle(getString(R.string.clear_data_title)).setMessage(getString(R.string.clear_data_message))
             .setPositiveButton(getString(R.string.yes)) { _, _ ->
                 CookieManager.getInstance().removeAllCookies(null); CookieManager.getInstance().flush()
                 WebStorage.getInstance().deleteAllData()
-                binding.webView.clearCache(true); binding.webView.clearHistory(); binding.webView.clearFormData(); binding.webView.clearSslPreferences()
+                binding.webView.clearCache(true); binding.webView.clearHistory(); binding.webView.clearFormData()
                 binding.webView.loadUrl(URL_HOME)
                 Toast.makeText(this, getString(R.string.clear_data_success), Toast.LENGTH_SHORT).show()
             }.setNegativeButton(getString(R.string.no), null).show()
@@ -164,6 +209,7 @@ f(['input[type="password"]','input[name="password"]','input[autocomplete="curren
         R.id.action_email -> { binding.webView.loadUrl(URL_EMAIL); true }
         R.id.action_a2f -> { binding.webView.loadUrl(URL_A2F); true }
         R.id.action_refresh -> { binding.webView.reload(); true }
+        R.id.action_copy_cookie -> { copyCookie(); true }
         R.id.action_autofill -> { showAutoFillDialog(); true }
         R.id.action_authenticator -> { startActivity(Intent(this, AuthenticatorActivity::class.java)); true }
         R.id.action_settings -> { startActivity(Intent(this, SettingsActivity::class.java)); true }

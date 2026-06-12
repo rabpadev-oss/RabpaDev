@@ -27,23 +27,20 @@ class TotpAdapter(private val accounts: MutableList<TotpAccount>, private val on
     override fun onCreateViewHolder(p: ViewGroup, t: Int) = VH(LayoutInflater.from(p.context).inflate(R.layout.item_totp, p, false))
     override fun getItemCount() = accounts.size
     override fun onBindViewHolder(h: VH, pos: Int) {
-        val acc = accounts[pos]
-        h.tvName.text = acc.name
+        val acc = accounts[pos]; h.tvName.text = acc.name
         fun update() {
             try {
-                val code = TotpGenerator.generate(acc.secret)
-                val secs = TotpGenerator.secondsRemaining()
+                val code = TotpGenerator.generate(acc.secret); val secs = TotpGenerator.secondsRemaining()
                 h.tvCode.text = code; h.tvCountdown.text = "${secs}s"
                 h.progress.max = 30; h.progress.progress = secs
                 val color = when { secs <= 5 -> ContextCompat.getColor(h.itemView.context, R.color.totp_red); secs <= 10 -> ContextCompat.getColor(h.itemView.context, R.color.totp_yellow); else -> ContextCompat.getColor(h.itemView.context, R.color.totp_green) }
                 h.tvCode.setTextColor(color); h.progress.setIndicatorColor(color)
-            } catch (e: Exception) { h.tvCode.text = "ERROR" }
+            } catch (e: Exception) { h.tvCode.text = "ERR" }
         }
         update()
         h.btnCopy.setOnClickListener {
-            val raw = TotpGenerator.generate(acc.secret).replace(" ", "")
-            val cm = it.context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            cm.setPrimaryClip(ClipData.newPlainText("TOTP", raw))
+            val raw = TotpGenerator.generateRaw(acc.secret)
+            (it.context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(ClipData.newPlainText("TOTP", raw))
             Toast.makeText(it.context, it.context.getString(R.string.authenticator_copy), Toast.LENGTH_SHORT).show()
         }
         h.btnDelete.setOnClickListener { onDelete(acc) }

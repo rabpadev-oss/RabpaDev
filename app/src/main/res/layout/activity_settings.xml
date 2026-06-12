@@ -7,12 +7,79 @@
         android:layout_height="wrap_content" android:theme="@style/ThemeOverlay.MikasaIG.AppBar">
         <com.google.android.material.appbar.MaterialToolbar android:id="@+id/toolbar"
             android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
-            app:title="Settings" app:navigationIconTint="@color/on_primary"/>
+            app:title="Settings" app:titleTextColor="@color/text_primary"
+            app:navigationIconTint="@color/on_primary"/>
     </com.google.android.material.appbar.AppBarLayout>
     <ScrollView android:layout_width="match_parent" android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
             android:orientation="vertical" android:padding="16dp">
+
+            <!-- Auto Fill Card -->
+            <com.google.android.material.card.MaterialCardView android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:layout_marginBottom="12dp"
+                app:cardBackgroundColor="@color/card_bg" app:cardCornerRadius="12dp"
+                app:strokeColor="@color/neon_blue" app:strokeWidth="1dp">
+                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:orientation="vertical" android:padding="16dp">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="⚡ Auto Fill" android:textColor="@color/neon_blue"
+                        android:textSize="14sp" android:textStyle="bold" android:layout_marginBottom="12dp"/>
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:gravity="center_vertical"
+                        android:layout_marginBottom="12dp">
+                        <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
+                            android:layout_weight="1" android:orientation="vertical">
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="Enable Auto Fill" android:textColor="@color/text_primary" android:textSize="15sp"/>
+                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                                android:text="Isi form otomatis saat halaman dimuat"
+                                android:textColor="@color/text_secondary" android:textSize="12sp"/>
+                        </LinearLayout>
+                        <com.google.android.material.switchmaterial.SwitchMaterial
+                            android:id="@+id/switchAutoFill" android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"/>
+                    </LinearLayout>
+                    <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilFillName"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp" android:hint="Nama (kosongkan = random)">
+                        <com.google.android.material.textfield.TextInputEditText android:id="@+id/etFillName"
+                            android:layout_width="match_parent" android:layout_height="wrap_content"
+                            android:textColor="@color/input_text" android:inputType="textPersonName"/>
+                    </com.google.android.material.textfield.TextInputLayout>
+                    <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilFillUsername"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp" android:hint="Username (kosongkan = random)">
+                        <com.google.android.material.textfield.TextInputEditText android:id="@+id/etFillUsername"
+                            android:layout_width="match_parent" android:layout_height="wrap_content"
+                            android:textColor="@color/input_text" android:inputType="text"/>
+                    </com.google.android.material.textfield.TextInputLayout>
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:orientation="horizontal" android:layout_marginBottom="8dp">
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                            android:layout_width="0dp" android:layout_height="wrap_content"
+                            android:layout_weight="1" android:layout_marginEnd="8dp"
+                            android:hint="Umur Min">
+                            <com.google.android.material.textfield.TextInputEditText android:id="@+id/etAgeMin"
+                                android:layout_width="match_parent" android:layout_height="wrap_content"
+                                android:textColor="@color/input_text" android:inputType="number" android:text="20"/>
+                        </com.google.android.material.textfield.TextInputLayout>
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                            android:layout_width="0dp" android:layout_height="wrap_content"
+                            android:layout_weight="1" android:hint="Umur Max">
+                            <com.google.android.material.textfield.TextInputEditText android:id="@+id/etAgeMax"
+                                android:layout_width="match_parent" android:layout_height="wrap_content"
+                                android:textColor="@color/input_text" android:inputType="number" android:text="49"/>
+                        </com.google.android.material.textfield.TextInputLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Password Autofill Card -->
             <com.google.android.material.card.MaterialCardView android:layout_width="match_parent"
                 android:layout_height="wrap_content" android:layout_marginBottom="12dp"
                 app:cardBackgroundColor="@color/card_bg" app:cardCornerRadius="12dp"
@@ -20,22 +87,22 @@
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:orientation="vertical" android:padding="16dp">
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Password Autofill" android:textColor="@color/neon_blue"
-                        android:textSize="13sp" android:textStyle="bold" android:layout_marginBottom="12dp"/>
+                        android:text="🔑 Password Autofill" android:textColor="@color/neon_blue"
+                        android:textSize="14sp" android:textStyle="bold" android:layout_marginBottom="12dp"/>
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                         android:orientation="horizontal" android:gravity="center_vertical"
                         android:layout_marginBottom="12dp">
                         <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
                             android:layout_weight="1" android:orientation="vertical">
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="Enable Password Autofill" android:textColor="@color/on_surface" android:textSize="15sp"/>
+                                android:text="Enable Password Autofill" android:textColor="@color/text_primary" android:textSize="15sp"/>
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                                 android:text="Isi password otomatis pada form login"
-                                android:textColor="@color/on_surface" android:textSize="12sp" android:alpha="0.6"/>
+                                android:textColor="@color/text_secondary" android:textSize="12sp"/>
                         </LinearLayout>
                         <com.google.android.material.switchmaterial.SwitchMaterial
-                            android:id="@+id/switchPasswordAutofill"
-                            android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+                            android:id="@+id/switchPasswordAutofill" android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"/>
                     </LinearLayout>
                     <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilDefaultPassword"
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
@@ -43,10 +110,12 @@
                         android:hint="Default Password" app:endIconMode="password_toggle">
                         <com.google.android.material.textfield.TextInputEditText android:id="@+id/etDefaultPassword"
                             android:layout_width="match_parent" android:layout_height="wrap_content"
-                            android:inputType="textPassword"/>
+                            android:textColor="@color/input_text" android:inputType="textPassword"/>
                     </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+
+            <!-- Auto Profile Card -->
             <com.google.android.material.card.MaterialCardView android:layout_width="match_parent"
                 android:layout_height="wrap_content" android:layout_marginBottom="12dp"
                 app:cardBackgroundColor="@color/card_bg" app:cardCornerRadius="12dp"
@@ -54,37 +123,45 @@
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:orientation="vertical" android:padding="16dp">
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Auto Profile Picture" android:textColor="@color/neon_blue"
-                        android:textSize="13sp" android:textStyle="bold" android:layout_marginBottom="12dp"/>
+                        android:text="🖼 Random Profile Picture" android:textColor="@color/neon_blue"
+                        android:textSize="14sp" android:textStyle="bold" android:layout_marginBottom="12dp"/>
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                         android:orientation="horizontal" android:gravity="center_vertical"
                         android:layout_marginBottom="12dp">
                         <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
                             android:layout_weight="1" android:orientation="vertical">
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="Enable Auto Profile Picture"
-                                android:textColor="@color/on_surface" android:textSize="15sp"/>
+                                android:text="Enable Random Profile Picture"
+                                android:textColor="@color/text_primary" android:textSize="15sp"/>
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="Upload foto profil otomatis"
-                                android:textColor="@color/on_surface" android:textSize="12sp" android:alpha="0.6"/>
+                                android:text="Pilih foto random dari daftar"
+                                android:textColor="@color/text_secondary" android:textSize="12sp"/>
                         </LinearLayout>
                         <com.google.android.material.switchmaterial.SwitchMaterial
-                            android:id="@+id/switchAutoProfile"
-                            android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+                            android:id="@+id/switchAutoProfile" android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"/>
                     </LinearLayout>
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:orientation="horizontal" android:gravity="center_vertical">
-                        <ImageView android:id="@+id/ivProfilePreview"
-                            android:layout_width="56dp" android:layout_height="56dp"
-                            android:scaleType="centerCrop" android:background="@color/surface_variant"
-                            android:layout_marginEnd="12dp"/>
-                        <com.google.android.material.button.MaterialButton android:id="@+id/btnChoosePhoto"
+                        android:orientation="horizontal">
+                        <com.google.android.material.button.MaterialButton android:id="@+id/btnAddPhoto"
                             style="@style/Widget.Material3.Button.OutlinedButton"
-                            android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Pilih Foto Profil"/>
+                            android:layout_width="0dp" android:layout_height="wrap_content"
+                            android:layout_weight="1" android:layout_marginEnd="8dp"
+                            android:textColor="@color/btn_text" android:text="+ Tambah Foto"/>
+                        <com.google.android.material.button.MaterialButton android:id="@+id/btnViewPhotos"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
+                            android:layout_width="0dp" android:layout_height="wrap_content"
+                            android:layout_weight="1" android:textColor="@color/btn_text"
+                            android:text="Lihat Daftar"/>
                     </LinearLayout>
+                    <TextView android:id="@+id/tvPhotoCount"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="0 foto tersimpan" android:textColor="@color/text_secondary"
+                        android:textSize="12sp" android:layout_marginTop="8dp"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+
+            <!-- Authenticator Card -->
             <com.google.android.material.card.MaterialCardView android:layout_width="match_parent"
                 android:layout_height="wrap_content" android:layout_marginBottom="12dp"
                 app:cardBackgroundColor="@color/card_bg" app:cardCornerRadius="12dp"
@@ -92,14 +169,16 @@
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:orientation="vertical" android:padding="16dp">
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Authenticator" android:textColor="@color/neon_blue"
-                        android:textSize="13sp" android:textStyle="bold" android:layout_marginBottom="8dp"/>
+                        android:text="🔐 Authenticator" android:textColor="@color/neon_blue"
+                        android:textSize="14sp" android:textStyle="bold" android:layout_marginBottom="8dp"/>
                     <com.google.android.material.button.MaterialButton android:id="@+id/btnOpenAuthenticator"
                         style="@style/Widget.Material3.Button.OutlinedButton"
                         android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:text="Kelola Authenticator Accounts"/>
+                        android:textColor="@color/btn_text" android:text="Kelola Authenticator Accounts"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+
+            <!-- Clear Data Card -->
             <com.google.android.material.card.MaterialCardView android:layout_width="match_parent"
                 android:layout_height="wrap_content" android:layout_marginBottom="12dp"
                 app:cardBackgroundColor="@color/card_bg" app:cardCornerRadius="12dp"
@@ -107,25 +186,27 @@
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:orientation="vertical" android:padding="16dp">
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Clear Data" android:textColor="@color/neon_blue"
-                        android:textSize="13sp" android:textStyle="bold" android:layout_marginBottom="8dp"/>
+                        android:text="🗑 Clear Data" android:textColor="@color/neon_blue"
+                        android:textSize="14sp" android:textStyle="bold" android:layout_marginBottom="8dp"/>
                     <com.google.android.material.button.MaterialButton android:id="@+id/btnClearCookies"
                         style="@style/Widget.Material3.Button.OutlinedButton"
                         android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp" android:text="Clear Cookies"/>
+                        android:layout_marginBottom="8dp" android:textColor="@color/btn_text" android:text="🍪 Clear Cookies"/>
                     <com.google.android.material.button.MaterialButton android:id="@+id/btnClearCache"
                         style="@style/Widget.Material3.Button.OutlinedButton"
                         android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp" android:text="Clear Cache"/>
+                        android:layout_marginBottom="8dp" android:textColor="@color/btn_text" android:text="🗂 Clear Cache"/>
                     <com.google.android.material.button.MaterialButton android:id="@+id/btnClearSession"
                         style="@style/Widget.Material3.Button.OutlinedButton"
                         android:layout_width="match_parent" android:layout_height="wrap_content"
-                        android:text="Clear Session"/>
+                        android:textColor="@color/btn_text" android:text="🔒 Clear Session"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+
             <com.google.android.material.button.MaterialButton android:id="@+id/btnSaveSettings"
                 android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="8dp" android:text="Simpan Settings"/>
+                android:layout_marginTop="8dp" android:text="💾 Simpan Settings"
+                android:textColor="@color/white"/>
         </LinearLayout>
     </ScrollView>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

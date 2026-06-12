@@ -7,21 +7,52 @@
         android:layout_height="wrap_content" android:theme="@style/ThemeOverlay.MikasaIG.AppBar">
         <com.google.android.material.appbar.MaterialToolbar android:id="@+id/toolbar"
             android:layout_width="match_parent" android:layout_height="?attr/actionBarSize"
-            app:title="Authenticator" app:navigationIconTint="@color/on_primary"/>
+            app:title="Authenticator" app:titleTextColor="@color/text_primary"
+            app:navigationIconTint="@color/on_primary"/>
     </com.google.android.material.appbar.AppBarLayout>
     <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
         android:orientation="vertical" app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        <com.google.android.material.card.MaterialCardView android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:layout_margin="8dp"
+            app:cardBackgroundColor="@color/card_bg" app:cardCornerRadius="12dp"
+            app:strokeColor="@color/neon_blue" app:strokeWidth="1dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:padding="12dp">
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="⚡ Quick OTP — Paste Secret Key"
+                    android:textColor="@color/neon_blue" android:textSize="13sp"
+                    android:textStyle="bold" android:layout_marginBottom="8dp"/>
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp" android:hint="Paste Secret Key di sini">
+                    <com.google.android.material.textfield.TextInputEditText android:id="@+id/etQuickSecret"
+                        android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:textColor="@color/input_text" android:fontFamily="monospace"
+                        android:inputType="textVisiblePassword"/>
+                </com.google.android.material.textfield.TextInputLayout>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btnQuickGenerate"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:text="🔑 Generate OTP &amp; Auto Copy"
+                    android:textColor="@color/white"/>
+                <TextView android:id="@+id/tvQuickOtp"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:gravity="center" android:text="" android:textColor="@color/totp_green"
+                    android:textSize="36sp" android:textStyle="bold" android:letterSpacing="0.2"
+                    android:fontFamily="monospace" android:layout_marginTop="8dp"
+                    android:visibility="gone"/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
         <TextView android:id="@+id/tvEmpty" android:layout_width="match_parent"
             android:layout_height="0dp" android:layout_weight="1" android:gravity="center"
-            android:text="@string/authenticator_empty" android:textColor="@color/on_surface"
-            android:textSize="15sp" android:alpha="0.5" android:visibility="gone" android:padding="32dp"/>
+            android:text="@string/authenticator_empty" android:textColor="@color/text_secondary"
+            android:textSize="15sp" android:visibility="gone" android:padding="32dp"/>
         <androidx.recyclerview.widget.RecyclerView android:id="@+id/recyclerView"
             android:layout_width="match_parent" android:layout_height="0dp"
             android:layout_weight="1" android:padding="8dp" android:clipToPadding="false"/>
     </LinearLayout>
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAdd" android:layout_width="wrap_content"
-        android:layout_height="wrap_content" android:layout_gravity="bottom|end"
-        android:layout_margin="16dp" android:contentDescription="Add"
-        app:srcCompat="@drawable/ic_add" app:tint="@color/white"/>
+    <com.google.android.material.floatingactionbutton.FloatingActionButton android:id="@+id/fabAdd"
+        android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end" android:layout_margin="16dp"
+        android:contentDescription="Add" app:srcCompat="@drawable/ic_add" app:tint="@color/white"/>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

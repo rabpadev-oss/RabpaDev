@@ -14,16 +14,10 @@
     <string name="clear_data_message">Hapus semua data Instagram yang tersimpan?</string>
     <string name="clear_data_success">Data berhasil dihapus</string>
     <string name="autofill_title">Auto Fill Data</string>
-    <string name="autofill_hint_name">Nama Lengkap</string>
-    <string name="autofill_hint_username">Username Instagram</string>
-    <string name="autofill_hint_email">Email</string>
-    <string name="autofill_hint_phone">Nomor HP</string>
-    <string name="autofill_hint_birthday">Tanggal Lahir (DD/MM/YYYY)</string>
-    <string name="autofill_hint_password">Password</string>
     <string name="autofill_btn_fill">Isi Otomatis</string>
     <string name="autofill_btn_save">Simpan Profil</string>
     <string name="autofill_saved">Profil berhasil disimpan!</string>
-    <string name="autofill_filled">Form berhasil diisi!</string>
+    <string name="autofill_filled">Auto fill aktif! Form akan terisi otomatis.</string>
     <string name="autofill_empty">Isi minimal nama dan email dulu.</string>
     <string name="yes">Ya</string>
     <string name="no">Tidak</string>
@@ -32,13 +26,14 @@
     <string name="permission_denied">Izin akses penyimpanan ditolak</string>
     <string name="splash_title">Mikasa IG Creat</string>
     <string name="splash_subtitle">by : mas ochid</string>
-    <string name="settings_title">Settings</string>
     <string name="settings_saved">Pengaturan disimpan</string>
     <string name="settings_clear_cookies">Clear Cookies</string>
     <string name="settings_clear_cache">Clear Cache</string>
     <string name="settings_clear_session">Clear Session</string>
-    <string name="photo_selected">Foto profil dipilih</string>
+    <string name="photo_added">Foto ditambahkan</string>
+    <string name="photo_deleted">Foto dihapus</string>
     <string name="cookies_cleared">Cookies berhasil dihapus</string>
+    <string name="cookie_copied">Cookie berhasil disalin!</string>
     <string name="cache_cleared">Cache berhasil dihapus</string>
     <string name="session_cleared">Session berhasil dihapus</string>
     <string name="authenticator_title">Authenticator</string>
@@ -47,6 +42,10 @@
     <string name="authenticator_added">Akun authenticator ditambahkan</string>
     <string name="authenticator_deleted">Akun dihapus</string>
     <string name="authenticator_empty">Belum ada akun.\nTap + untuk menambah.</string>
-    <string name="authenticator_copy">Kode disalin ke clipboard</string>
+    <string name="authenticator_copy">Kode disalin ke clipboard!</string>
+    <string name="authenticator_auto_copy">Kode OTP: %1$s — Disalin otomatis!</string>
     <string name="delete_confirm">Hapus akun ini?</string>
+    <string name="photo_list_empty">Belum ada foto.\nTap + untuk menambah.</string>
+    <string name="random_photo_used">Foto random dipilih</string>
+    <string name="autofill_random_filled">Data random berhasil diisi!</string>
 </resources>
