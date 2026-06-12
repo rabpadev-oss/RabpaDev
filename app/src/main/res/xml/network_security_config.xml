@@ -5,6 +5,5 @@
         <domain includeSubdomains="true">cdninstagram.com</domain>
         <domain includeSubdomains="true">facebook.com</domain>
         <domain includeSubdomains="true">fbcdn.net</domain>
-        <domain includeSubdomains="true">accountscenter.instagram.com</domain>
     </domain-config>
 </network-security-config>

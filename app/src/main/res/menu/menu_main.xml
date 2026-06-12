@@ -1,35 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-
-    <item
-        android:id="@+id/action_home"
-        android:icon="@drawable/ic_home"
-        android:title="@string/menu_home"
-        app:showAsAction="always" />
-
-    <item
-        android:id="@+id/action_email"
-        android:icon="@drawable/ic_email"
-        android:title="@string/menu_email"
-        app:showAsAction="always" />
-
-    <item
-        android:id="@+id/action_a2f"
-        android:icon="@drawable/ic_lock"
-        android:title="@string/menu_a2f"
-        app:showAsAction="always" />
-
-    <item
-        android:id="@+id/action_refresh"
-        android:icon="@drawable/ic_refresh"
-        android:title="@string/menu_refresh"
-        app:showAsAction="always" />
-
-    <item
-        android:id="@+id/action_clear_data"
-        android:icon="@drawable/ic_delete"
-        android:title="@string/menu_clear_data"
-        app:showAsAction="never" />
-
+    <item android:id="@+id/action_home" android:icon="@drawable/ic_home" android:title="Home" app:showAsAction="always"/>
+    <item android:id="@+id/action_email" android:icon="@drawable/ic_email" android:title="Email" app:showAsAction="always"/>
+    <item android:id="@+id/action_a2f" android:icon="@drawable/ic_lock" android:title="A2F" app:showAsAction="always"/>
+    <item android:id="@+id/action_refresh" android:icon="@drawable/ic_refresh" android:title="Refresh" app:showAsAction="always"/>
+    <item android:id="@+id/action_autofill" android:icon="@drawable/ic_autofill" android:title="Auto Fill" app:showAsAction="always"/>
+    <item android:id="@+id/action_authenticator" android:icon="@drawable/ic_otp" android:title="Authenticator" app:showAsAction="never"/>
+    <item android:id="@+id/action_settings" android:icon="@drawable/ic_settings" android:title="Settings" app:showAsAction="never"/>
+    <item android:id="@+id/action_clear_data" android:icon="@drawable/ic_delete" android:title="Clear Data" app:showAsAction="never"/>
 </menu>

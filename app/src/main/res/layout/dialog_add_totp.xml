@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:orientation="vertical" android:padding="16dp">
+    <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilTotpName"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp" android:hint="Nama Akun (misal: Instagram)">
+        <com.google.android.material.textfield.TextInputEditText android:id="@+id/etTotpName"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:inputType="text" android:imeOptions="actionNext"/>
+    </com.google.android.material.textfield.TextInputLayout>
+    <com.google.android.material.textfield.TextInputLayout android:id="@+id/tilTotpSecret"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:hint="Secret Key (Base32)">
+        <com.google.android.material.textfield.TextInputEditText android:id="@+id/etTotpSecret"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:inputType="textVisiblePassword" android:fontFamily="monospace"
+            android:imeOptions="actionDone"/>
+    </com.google.android.material.textfield.TextInputLayout>
+</LinearLayout>
