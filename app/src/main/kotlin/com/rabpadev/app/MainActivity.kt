@@ -82,6 +82,34 @@ class MainActivity : AppCompatActivity() {
         else binding.webView.restoreState(savedInstanceState)
     }
 
+
+    private val USER_AGENTS = listOf(
+        "Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.6367.82 Mobile Safari/537.36",
+        "Mozilla/5.0 (Linux; Android 13; Samsung Galaxy S23) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.6312.40 Mobile Safari/537.36",
+        "Mozilla/5.0 (Linux; Android 14; Redmi Note 13 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.6367.72 Mobile Safari/537.36",
+        "Mozilla/5.0 (Linux; Android 13; OPPO Reno10 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.6261.105 Mobile Safari/537.36",
+        "Mozilla/5.0 (Linux; Android 12; vivo V25 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.6099.144 Mobile Safari/537.36",
+        "Mozilla/5.0 (Linux; Android 14; Pixel 7a) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.6422.52 Mobile Safari/537.36",
+        "Mozilla/5.0 (Linux; Android 13; Samsung Galaxy A54) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.6312.99 Mobile Safari/537.36",
+        "Mozilla/5.0 (Linux; Android 14; Xiaomi 14 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.6367.60 Mobile Safari/537.36",
+        "Mozilla/5.0 (Linux; Android 12; Realme GT Neo 3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.6045.193 Mobile Safari/537.36",
+        "Mozilla/5.0 (Linux; Android 13; OnePlus 11) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.6261.90 Mobile Safari/537.36",
+        "Mozilla/5.0 (Linux; Android 14; Samsung Galaxy S24 Ultra) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.6367.82 Mobile Safari/537.36",
+        "Mozilla/5.0 (Linux; Android 13; Poco X5 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.6167.143 Mobile Safari/537.36",
+        "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4.1 Mobile/15E148 Safari/604.1",
+        "Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1",
+        "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.6367.82 Mobile Safari/537.36"
+    )
+
+    private fun randomUserAgent(): String = USER_AGENTS.random()
+
+    private fun applyRandomUserAgent() {
+        val ua = randomUserAgent()
+        binding.webView.settings.userAgentString = ua
+        getSharedPreferences("mikasa_settings", Context.MODE_PRIVATE)
+            .edit().putString("last_ua", ua).apply()
+    }
+
     @SuppressLint("SetJavaScriptEnabled")
     private fun setupWebView() {
         val wv = binding.webView
@@ -94,7 +122,8 @@ class MainActivity : AppCompatActivity() {
             cacheMode = WebSettings.LOAD_DEFAULT; allowFileAccess = true
             allowContentAccess = true; mediaPlaybackRequiresUserGesture = false
             mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
-            userAgentString = "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Mobile Safari/537.36"
+            val savedUa = getSharedPreferences("mikasa_settings", Context.MODE_PRIVATE).getString("last_ua", null)
+            userAgentString = savedUa ?: randomUserAgent()
         }
         wv.addJavascriptInterface(AutoFillBridge(), "AndroidBridge")
         wv.webViewClient = object : WebViewClient() {
@@ -338,6 +367,7 @@ class MainActivity : AppCompatActivity() {
                 binding.webView.clearCache(true)
                 binding.webView.clearHistory()
                 binding.webView.clearFormData()
+                applyRandomUserAgent()
                 binding.webView.loadUrl(URL_HOME)
                 Toast.makeText(this, getString(R.string.clear_data_success), Toast.LENGTH_SHORT).show()
             }.setNegativeButton(getString(R.string.no), null).show()
