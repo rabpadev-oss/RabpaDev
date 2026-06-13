@@ -107,8 +107,7 @@ class MainActivity : AppCompatActivity() {
                     url.startsWith("https://l.instagram.com") ||
                     url.startsWith("https://i.instagram.com") -> { v?.loadUrl(url); false }
                     url.startsWith("intent://") -> {
-                        try {
-                            val i = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
+                        try { val i = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
                             if (i.resolveActivity(packageManager) != null) startActivity(i)
                         } catch (e: Exception) {}
                         true
@@ -135,8 +134,7 @@ class MainActivity : AppCompatActivity() {
                 if (p == 100) binding.progressBar.visibility = View.GONE
             }
             override fun onShowFileChooser(wv2: WebView?, cb: ValueCallback<Array<Uri>>?, params: FileChooserParams?): Boolean {
-                fileUploadCallback?.onReceiveValue(null)
-                fileUploadCallback = cb
+                fileUploadCallback?.onReceiveValue(null); fileUploadCallback = cb
                 if (AppSettings.isAutoProfileEnabled(this@MainActivity)) {
                     val uri = AppSettings.getRandomPhoto(this@MainActivity)
                     if (uri != null) {
@@ -150,22 +148,17 @@ class MainActivity : AppCompatActivity() {
                 }
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU &&
                     ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                    permLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
-                    return true
+                    permLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE); return true
                 }
                 val intent = params?.createIntent() ?: Intent(Intent.ACTION_GET_CONTENT).apply {
                     type = "*/*"; addCategory(Intent.CATEGORY_OPENABLE)
                     putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
                 }
-                filePicker.launch(intent)
-                return true
+                filePicker.launch(intent); return true
             }
             override fun onCreateWindow(v: WebView?, d: Boolean, u: Boolean, msg: Message?): Boolean {
-                val nw = WebView(this@MainActivity)
-                nw.settings.javaScriptEnabled = true
-                (msg?.obj as? WebView.WebViewTransport)?.webView = nw
-                msg?.sendToTarget()
-                return true
+                val nw = WebView(this@MainActivity); nw.settings.javaScriptEnabled = true
+                (msg?.obj as? WebView.WebViewTransport)?.webView = nw; msg?.sendToTarget(); return true
             }
         }
     }
@@ -186,89 +179,71 @@ class MainActivity : AppCompatActivity() {
             val p = AppSettings.getDefaultPassword(this)
             if (p.isNotEmpty()) injectPassword(p)
         }
-        if (AppSettings.isAutoFillEnabled(this)) {
-            injectSmartFill()
-        }
+        if (AppSettings.isAutoFillEnabled(this)) injectSmartFill()
     }
 
-    private fun esc(s: String) = s.replace("\\", "\\\\").replace("'", "\\'").replace("\n", "")
+    // Safe escape: replace \ with \\ and ' with \x27 (JS hex - no Kotlin literal issues)
+    private fun jsStr(s: String): String = s.replace("\\", "\\\\").replace("'", "\\x27")
 
     private fun injectSmartFill() {
-        val savedName = AppSettings.getFillName(this)
-        val savedUser = AppSettings.getFillUsername(this)
-        val name = if (savedName.isNotEmpty()) savedName else RandomData.randomName()
-        val username = if (savedUser.isNotEmpty()) savedUser else RandomData.randomUsername()
-        val bday = RandomData.randomBirthday(AppSettings.getAgeMin(this), AppSettings.getAgeMax(this))
-        val year = RandomData.birthdayToYear(bday)
-        val pwd = AppSettings.getDefaultPassword(this)
+        val nm = jsStr(if (AppSettings.getFillName(this).isNotEmpty()) AppSettings.getFillName(this) else RandomData.randomName())
+        val us = jsStr(if (AppSettings.getFillUsername(this).isNotEmpty()) AppSettings.getFillUsername(this) else RandomData.randomUsername())
+        val bd = jsStr(RandomData.randomBirthday(AppSettings.getAgeMin(this), AppSettings.getAgeMax(this)))
+        val yr = jsStr(RandomData.birthdayToYear(bd))
+        val pw = jsStr(AppSettings.getDefaultPassword(this))
 
-        val nm = esc(name); val us = esc(username); val pw = esc(pwd)
-        val bd = esc(bday); val yr = esc(year)
-
-        // NOTE: JS dollar signs use concat to avoid Kotlin string template conflict
         val js = "(function(){" +
             "if(window.__mf)return;window.__mf=true;" +
             "var NM='" + nm + "',US='" + us + "',PW='" + pw + "',BD='" + bd + "',YR='" + yr + "';" +
-            "var NP=['name','nama','full','nombre','nom','nome','tên','имя','الاسم','姓名','名前','이름'];" +
-            "var UP=['username','user','pengguna','utilisateur','benutzername','用户名','ユーザー','사용자','konto','conta'];" +
-            "var PP=['password','sandi','contraseña','passwort','пароль','密码','パスワード','비밀번호','mot de passe'];" +
-            "var AP=['age','umur','usia','edad','alter','возраст','العمر','年齢','나이','tuổi'];" +
-            "var BP=['birth','lahir','birthday','fecha','anniversaire','день','生日','誕生','생일','year','tahun','anno','dob'];" +
+            "var NP=['name','nama','full','nombre','nom','nome','ten','имя','姓名','名前','이름'];" +
+            "var UP=['username','user','pengguna','utilisateur','benutzername','用户名','ユーザー','사용자'];" +
+            "var PP=['password','sandi','contraseña','passwort','пароль','密码','パスワード','비밀번호'];" +
+            "var AP=['age','umur','usia','edad','alter','年齢','나이'];" +
+            "var BP=['birth','lahir','birthday','fecha','生日','생일','year','tahun','dob'];" +
             "function mt(el,pats){" +
-            "  var t=((el.placeholder||'')+(el.name||'')+(el.id||'')+(el.getAttribute('aria-label')||'')).toLowerCase();" +
-            "  if(el.id){var lb=document.querySelector('label[for="'+el.id+'"]');if(lb)t+=lb.innerText.toLowerCase();}" +
-            "  return pats.some(function(p){return t.indexOf(p)>=0;});" +
-            "}" +
-            "function sv(el,v){" +
-            "  if(!v||el.dataset.mf)return;" +
-            "  try{" +
-            "    var d=Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype,'value');" +
-            "    if(d&&d.set)d.set.call(el,v);else el.value=v;" +
-            "    el.dataset.mf='1';" +
-            "    ['input','change','blur'].forEach(function(e){el.dispatchEvent(new Event(e,{bubbles:true}));});" +
-            "  }catch(e){}" +
-            "}" +
+            "var t=((el.placeholder||'')+(el.name||'')+(el.id||'')+(el.getAttribute('aria-label')||'')).toLowerCase();" +
+            "try{if(el.id){var lb=document.querySelector('label[for=\"'+el.id+'\"]');if(lb)t+=lb.innerText.toLowerCase();}}catch(e){}" +
+            "return pats.some(function(p){return t.indexOf(p)>=0;});}" +
+            "function sv(el,v){if(!v||el.dataset.mf)return;" +
+            "try{var d=Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype,'value');" +
+            "if(d&&d.set)d.set.call(el,v);else el.value=v;" +
+            "el.dataset.mf='1';" +
+            "el.dispatchEvent(new Event('input',{bubbles:true}));" +
+            "el.dispatchEvent(new Event('change',{bubbles:true}));" +
+            "el.dispatchEvent(new Event('blur',{bubbles:true}));}catch(e){}}" +
             "function fi(el){" +
-            "  if(!el||el.type==='hidden'||el.type==='submit'||el.type==='button'||el.type==='checkbox'||el.type==='radio')return;" +
-            "  if(el.type==='password'||mt(el,PP)){sv(el,PW);return;}" +
-            "  if(mt(el,UP)){sv(el,US);return;}" +
-            "  if(mt(el,NP)){sv(el,NM);return;}" +
-            "  if(mt(el,BP)){sv(el,BD||YR);return;}" +
-            "  if(mt(el,AP)){sv(el,(new Date().getFullYear()-parseInt(YR||'2000')).toString());return;}" +
-            "}" +
+            "if(!el)return;" +
+            "var t=(el.type||'').toLowerCase();" +
+            "if(t==='hidden'||t==='submit'||t==='button'||t==='checkbox'||t==='radio')return;" +
+            "if(t==='password'||mt(el,PP)){sv(el,PW);return;}" +
+            "if(mt(el,UP)){sv(el,US);return;}" +
+            "if(mt(el,NP)){sv(el,NM);return;}" +
+            "if(mt(el,BP)){sv(el,BD||YR);return;}" +
+            "if(mt(el,AP)){sv(el,(new Date().getFullYear()-parseInt(YR||'2000')).toString());return;}}" +
             "document.querySelectorAll('input,textarea').forEach(fi);" +
             "document.querySelectorAll('select').forEach(function(sel){" +
-            "  if(mt(sel,BP)||mt(sel,AP)){" +
-            "    Array.from(sel.options).forEach(function(o){if(o.value===YR||o.text===YR){sel.value=YR;sel.dispatchEvent(new Event('change',{bubbles:true}));}});" +
-            "  }" +
-            "});" +
-            "var obs=new MutationObserver(function(ms){" +
-            "  ms.forEach(function(m){m.addedNodes.forEach(function(n){" +
-            "    if(n.nodeType!==1)return;" +
-            "    if(n.tagName==='INPUT'||n.tagName==='TEXTAREA')fi(n);" +
-            "    n.querySelectorAll&&n.querySelectorAll('input,textarea').forEach(fi);" +
-            "  });});" +
-            "});" +
+            "if(mt(sel,BP)||mt(sel,AP)){" +
+            "Array.from(sel.options).forEach(function(o){" +
+            "if(o.value===YR||o.text===YR){sel.value=YR;sel.dispatchEvent(new Event('change',{bubbles:true}));}});}});" +
+            "var obs=new MutationObserver(function(ms){ms.forEach(function(m){" +
+            "m.addedNodes.forEach(function(n){if(n.nodeType!==1)return;" +
+            "if(n.tagName==='INPUT'||n.tagName==='TEXTAREA')fi(n);" +
+            "n.querySelectorAll&&n.querySelectorAll('input,textarea').forEach(fi);});});});" +
             "obs.observe(document.body||document.documentElement,{childList:true,subtree:true});" +
             "document.addEventListener('focusin',function(e){" +
-            "  if(e.target&&(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'))fi(e.target);" +
-            "},true);" +
-            "})()"
+            "if(e.target&&(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'))fi(e.target);},true);})()"
         binding.webView.evaluateJavascript(js, null)
     }
 
     private fun injectPassword(pwd: String) {
-        val safe = esc(pwd)
+        val safe = jsStr(pwd)
         val js = "(function(){" +
-            "var els=document.querySelectorAll('input[type="password"]');" +
+            "var els=document.querySelectorAll('input[type=password]');" +
             "if(!els.length)return;" +
             "var s=Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype,'value').set;" +
-            "els.forEach(function(el){" +
-            "  s.call(el,'" + safe + "');" +
-            "  el.dispatchEvent(new Event('input',{bubbles:true}));" +
-            "  el.dispatchEvent(new Event('change',{bubbles:true}));" +
-            "});" +
-            "})()"
+            "els.forEach(function(el){s.call(el,'" + safe + "');" +
+            "el.dispatchEvent(new Event('input',{bubbles:true}));" +
+            "el.dispatchEvent(new Event('change',{bubbles:true}));});})()"
         binding.webView.evaluateJavascript(js, null)
     }
 
@@ -276,8 +251,7 @@ class MainActivity : AppCompatActivity() {
         val url = binding.webView.url ?: URL_HOME
         val cookies = CookieManager.getInstance().getCookie(url)
         if (cookies.isNullOrEmpty()) {
-            Toast.makeText(this, "Tidak ada cookie untuk halaman ini", Toast.LENGTH_SHORT).show()
-            return
+            Toast.makeText(this, "Tidak ada cookie", Toast.LENGTH_SHORT).show(); return
         }
         val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         cm.setPrimaryClip(ClipData.newPlainText("Cookie", cookies))
@@ -333,19 +307,22 @@ class MainActivity : AppCompatActivity() {
             .setNegativeButton(getString(R.string.cancel), null).show()
     }
 
-    private fun injectManualFill(name: String, user: String, email: String, phone: String, bday: String, pwd: String) {
+    private fun injectManualFill(name: String, user: String, email: String,
+                                  phone: String, bday: String, pwd: String) {
+        val nm = jsStr(name); val us = jsStr(user); val em = jsStr(email)
+        val ph = jsStr(phone); val bd = jsStr(bday); val pw = jsStr(pwd)
         val js = "(function(){" +
             "function f(sels,v){if(!v)return;" +
-            "  var s=Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype,'value').set;" +
-            "  sels.forEach(function(sel){document.querySelectorAll(sel).forEach(function(el){" +
-            "    s.call(el,v);el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));" +
-            "  });});}" +
-            "f(['input[name="name"]','input[name="fullName"]','input[autocomplete="name"]'],'" + esc(name) + "');" +
-            "f(['input[name="username"]','input[autocomplete="username"]'],'" + esc(user) + "');" +
-            "f(['input[type="email"]','input[name="email"]','input[name="emailOrPhone"]'],'" + esc(email) + "');" +
-            "f(['input[type="tel"]','input[name="phone"]'],'" + esc(phone) + "');" +
-            "f(['input[name="birthday"]'],'" + esc(bday) + "');" +
-            "f(['input[type="password"]','input[name="password"]'],'" + esc(pwd) + "');" +
+            "var s=Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype,'value').set;" +
+            "sels.forEach(function(sel){document.querySelectorAll(sel).forEach(function(el){" +
+            "s.call(el,v);el.dispatchEvent(new Event('input',{bubbles:true}));" +
+            "el.dispatchEvent(new Event('change',{bubbles:true}));});});}" +
+            "f(['input[name=name]','input[name=fullName]','input[autocomplete=name]'],'" + nm + "');" +
+            "f(['input[name=username]','input[autocomplete=username]'],'" + us + "');" +
+            "f(['input[type=email]','input[name=email]','input[name=emailOrPhone]'],'" + em + "');" +
+            "f(['input[type=tel]','input[name=phone]'],'" + ph + "');" +
+            "f(['input[name=birthday]'],'" + bd + "');" +
+            "f(['input[type=password]','input[name=password]'],'" + pw + "');" +
             "})()"
         binding.webView.evaluateJavascript(js, null)
     }
